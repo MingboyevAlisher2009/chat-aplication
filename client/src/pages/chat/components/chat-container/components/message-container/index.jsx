@@ -2,18 +2,12 @@ import TelegramAudioPlayer from "@/components/audio.palyer";
 import VideoPlayer from "@/components/player";
 import apiClient from "@/lib/api.client";
 import { useAppStore } from "@/store";
-import {
-  GET_MESSAGES_CHANNEL_ROUTE,
-  GET_MESSAGES_ROUTE,
-  HOST,
-} from "@/utils/constants";
+import { GET_MESSAGES_ROUTE, HOST } from "@/utils/constants";
 import moment from "moment";
 import React, { useEffect, useRef, useState } from "react";
 import { MdDelete, MdEdit, MdFolder, MdOutlineSaveAlt } from "react-icons/md";
 import { IoMdArrowRoundDown, IoMdCheckmark } from "react-icons/io";
 import { IoCheckmarkDone, IoCloseSharp } from "react-icons/io5";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { getColor } from "@/lib/utils";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -31,6 +25,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useSocket } from "@/context/socket-context";
+import { Link } from "react-router-dom";
 
 const MessageContainer = () => {
   const scrollRef = useRef(null);
@@ -75,7 +70,6 @@ const MessageContainer = () => {
 
               const updatedNotification = notification.filter(
                 (state) => state.sender !== message.sender
-                // state.recipient !== message.recipient
               );
               setNotification(updatedNotification);
             }
@@ -95,7 +89,7 @@ const MessageContainer = () => {
         observer.unobserve(element);
       });
     };
-  }, [selectedChatMessages]);
+  }, [selectedChatMessages, setNotification]);
 
   useEffect(() => {
     const getMessages = async () => {
@@ -111,23 +105,10 @@ const MessageContainer = () => {
       }
     };
 
-    const getChannelMessages = async () => {
-      try {
-        const data = await apiClient.get(
-          `${GET_MESSAGES_CHANNEL_ROUTE}/${selectedChatData._id}`
-        );
-        if (data.status === 200) {
-          setSelectedChatMessages(data.data.messages);
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
     if (selectedChatData._id) {
       if (selectedChatType === "contact") {
         getMessages();
-      } else if (selectedChatType === "channel") getChannelMessages();
+      }
     }
   }, [selectedChatData, selectedChatType, setSelectedChatMessages]);
 
@@ -200,7 +181,6 @@ const MessageContainer = () => {
             </div>
           )}
           {selectedChatType === "contact" && renderDmMessages(message)}
-          {selectedChatType === "channel" && renderChannelMessages(message)}
         </div>
       );
     });
@@ -256,20 +236,36 @@ const MessageContainer = () => {
               {message.answer && (
                 <button
                   onClick={() => handleScroll(message.answer._id)}
-                  className="flex gap-2 items-center mb-2 text-white bg-gray-500/50 p-2 rounded cursor-pointer select-none"
+                  className="flex w-full gap-2 items-center mb-2 text-white bg-gray-500/50 p-2 rounded cursor-pointer"
                 >
                   <TiArrowBack className="text-2xl" />
                   {message.answer.messageType === "text" ? (
                     <p>{message.answer.content}</p>
-                  ) : (
+                  ) : checkImage(message.answer.fileUrl) ? (
                     <img
                       className="w-10 h-10 bg-center bg-cover"
                       src={`${HOST}/${message.answer.fileUrl}`}
                     />
+                  ) : (
+                    <div>
+                      <MdFolder size={20} />
+                    </div>
                   )}
                 </button>
               )}
-              {message.content}
+              {message.content.startsWith("http://") ||
+              message.content.startsWith("https://") ? (
+                <Link
+                  className="text-blue-600 underline"
+                  target="_blank"
+                  to={message.content}
+                >
+                  {message.content}
+                </Link>
+              ) : (
+                message.content
+              )}
+
               {message.sender !== selectedChatData._id && (
                 <span className="absolute bottom-1 right-1">
                   {message.seen ? <IoCheckmarkDone /> : <IoMdCheckmark />}
@@ -404,123 +400,6 @@ const MessageContainer = () => {
     currentlyPlayingMediaRef.current = mediaRef;
   };
 
-  const renderChannelMessages = (message) => {
-    return (
-      <div
-        data-id={message._id}
-        className={`mt-5 ${
-          message.sender._id !== userInfo._id ? "text-left" : "text-right"
-        }`}
-      >
-        {message.messageType === "text" && (
-          <div
-            className={`${
-              message.sender._id !== userInfo._id
-                ? "bg-[#8417ff]/5 text-[#8417ff]/90 border-[#8417ff]/50 relative"
-                : "bg-[#2a2b33]/5 text-white/80 border-white/50 relative"
-            } border inline-block p-4 rounded my-1 max-w-[50%] break-words ml-12`}
-          >
-            {message.answer && (
-              <button
-                onClick={() => handleScroll(message.answer._id)}
-                className="flex gap-2 items-center mb-2 text-white bg-gray-500/50 p-2 rounded cursor-pointer select-none"
-              >
-                <TiArrowBack className="text-2xl" />
-                <p>{message.answer.content}</p>
-              </button>
-            )}
-            {message.content}
-          </div>
-        )}
-        {message.messageType === "file" && (
-          <div
-            className={`${
-              message.sender._id === userInfo._id
-                ? "bg-[#8417ff]/5 text-[#8417ff]/90 border-[#8417ff]/50 relative"
-                : "bg-[#2a2b33]/5 text-white/80 border-white/50 relative"
-            } border inline-block p-4 rounded my-1 max-w-[50%] break-words`}
-          >
-            {checkImage(message.fileUrl) ? (
-              <div
-                onClick={() => {
-                  setshowImage(true);
-                  setimageUrl(message.fileUrl);
-                }}
-                className="cursor-pointer"
-              >
-                <img
-                  className="bg-cover bg-center object-cover"
-                  width={300}
-                  height={300}
-                  src={`${HOST}/${message.fileUrl}`}
-                  alt={message.sender}
-                />
-              </div>
-            ) : message.fileUrl.toLowerCase().endsWith(".mp3") ||
-              message.fileUrl.toLowerCase().endsWith(".m4a") ? (
-              <TelegramAudioPlayer
-                src={message.fileUrl}
-                title={message.fileUrl.split("/").pop()}
-                downloadFile={downloadFile}
-                onPlay={(audioRef) => handlePlayMedia(audioRef)}
-              />
-            ) : message.fileUrl.toLowerCase().endsWith(".mp4") ? (
-              <VideoPlayer
-                initialSrc={message.fileUrl}
-                title={message.fileUrl.split("/").pop()}
-                downloadFile={downloadFile}
-                onPlay={(audioRef) => handlePlayMedia(audioRef)}
-              />
-            ) : (
-              <div className="flex items-center justify-center gap-4">
-                <span>
-                  <MdFolder size={30} />
-                </span>
-                <span>{message.fileUrl.split("/").pop()}</span>
-                <span
-                  className="bg-black/20 p-3 text-2xl rounded-full hover:bg-black/50 cursor-pointer transition-all duration-300"
-                  onClick={() => downloadFile(message.fileUrl)}
-                >
-                  <IoMdArrowRoundDown />
-                </span>
-              </div>
-            )}
-          </div>
-        )}
-        {message.sender._id !== userInfo._id ? (
-          <div className="flex items-center justify-start gap-5">
-            <Avatar className="w-12 h-12 rounded-full overflow-hidden">
-              {message.sender.image && (
-                <AvatarImage
-                  src={`${HOST}/${message.sender.image}`}
-                  alt="profile"
-                  className="object-cover w-full h-full bg-black"
-                />
-              )}
-              <AvatarFallback
-                className={`uppercase w-12 h-12 text-lg border-[1px] flex items-center justify-center rounded-full ${getColor(
-                  message.sender.color
-                )}`}
-              >
-                {message.sender.firstName
-                  ? message.sender.firstName.split("").shift()
-                  : message.sender.email.split("").shift()}
-              </AvatarFallback>
-            </Avatar>
-            <span className="text-sm text-white/60">{`${message.sender.firstName} ${message.sender.lastName}`}</span>
-            <div className="text-sm text-white/60">
-              {moment(message.createdAt).format("LT")}
-            </div>
-          </div>
-        ) : (
-          <div className="text-sm text-white/60">
-            {moment(message.createdAt).format("LT")}
-          </div>
-        )}
-      </div>
-    );
-  };
-
   return (
     <div
       className="flex-1 overflow-y-auto scrollbar-hidden p-4 px-8 md:w-[65vw] lg:w-[70vw] 
@@ -564,9 +443,9 @@ const MessageContainer = () => {
             </p>
           </DialogDescription>
           <DialogFooter>
-            <DialogClose>
-              <Button>Close</Button>
-            </DialogClose>
+            <Button onClick={toggleDeleteModal} className="sm:mt-0 mt-3">
+              Close
+            </Button>
             <Button
               className="bg-red-500 hover:bg-red-700"
               onClick={handleDelete}

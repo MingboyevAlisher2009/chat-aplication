@@ -75,9 +75,11 @@ const Auth = () => {
           email: data.email,
           password: data.password,
         });
+
         if (response.data.success) {
+          localStorage.setItem("token", response.data.token);
           setUserInfo(response.data.data);
-          navigate("/profile");
+          window.location.pathname = "/profile";
         }
       }
     } catch (error) {

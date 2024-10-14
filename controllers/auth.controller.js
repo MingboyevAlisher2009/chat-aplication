@@ -18,7 +18,9 @@ export const signup = async (req, res) => {
     }
 
     const data = await User.create(req.body);
+
     const token = generateToken(email, data._id);
+    
     return res.json({
       data,
       token,

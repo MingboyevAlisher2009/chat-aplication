@@ -12,7 +12,7 @@ export const createChatSlice = (set, get) => ({
   notification: [],
   answer: null,
   editMessage: null,
-  // State setters
+
   setAnswer: (answer) => set({ answer }),
   setEditMessage: (editMessage) => set({ editMessage }),
   setNotification: (notification) => set({ notification }),
@@ -29,7 +29,6 @@ export const createChatSlice = (set, get) => ({
   setSelectedChatMessages: (selectedChatMessages) =>
     set({ selectedChatMessages }),
 
-  // Close chat functionality
   closeChat: () =>
     set({
       selectedChatData: undefined,
@@ -37,36 +36,26 @@ export const createChatSlice = (set, get) => ({
       selectedChatMessages: [],
     }),
 
-  // Add channel
   addChannel: (channel) => {
     const channels = get().channels;
-    set({ channels: [...channels, channel] }); // Ensure immutability
+    set({ channels: [...channels, channel] });
   },
 
-  // Add message to selected chat
   addMessage: (message) => {
     const selectedChatMessages = get().selectedChatMessages;
-    const selectedChatType = get().selectedChatType;
 
     set({
       selectedChatMessages: [
         ...selectedChatMessages,
         {
           ...message,
-          recipient:
-            selectedChatType === "channel"
-              ? message.recipient
-              : message.recipient._id,
-          sender:
-            selectedChatType === "channel"
-              ? message.sender
-              : message.sender._id,
+          recipient: message.recipient._id,
+          sender: message.sender._id,
         },
       ],
     });
   },
 
-  // Add channel at the top of the channel list
   addChannelInChannelList: (message) => {
     const channels = get().channels;
     const channelToUpdate = channels.find(
@@ -82,7 +71,6 @@ export const createChatSlice = (set, get) => ({
     }
   },
 
-  // Add contacts in direct messages list (DM)
   addContactsDminContacts: (message) => {
     const userId = get().userInfo._id;
     const fromId =

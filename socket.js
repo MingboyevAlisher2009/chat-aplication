@@ -21,12 +21,12 @@ const deleteFileAndEmptyFolder = (filePath) => {
         files.forEach((file) => {
           const filePath = path.join(dirPath, file);
           if (statSync(filePath).isDirectory()) {
-            deleteDirectoryRecursively(filePath); 
+            deleteDirectoryRecursively(filePath);
           } else {
-            unlinkSync(filePath); 
+            unlinkSync(filePath);
           }
         });
-        rmdirSync(dirPath); 
+        rmdirSync(dirPath);
       } catch (err) {
         console.error("Error deleting directory:", err);
       }
@@ -73,6 +73,7 @@ const setupSocket = (server) => {
         .populate("sender", "id email firstName lastName image color")
         .populate("recipient", "id email firstName lastName image color")
         .populate("answer");
+
 
       if (recipientSocketId) {
         io.to(recipientSocketId).emit("reciveMessage", messageData);
@@ -172,8 +173,6 @@ const setupSocket = (server) => {
         ],
       }).populate("answer");
 
-      console.log(messages);
-
       const senderSocketId = userSocketMap.get(data.sender.toString());
       const recipientSocketId = userSocketMap.get(data.recipient?.toString());
 
@@ -206,7 +205,7 @@ const setupSocket = (server) => {
       message._id,
       message,
       { new: true }
-    );
+    ).populate("answer");
 
     if (senderSocketId) {
       io.to(senderSocketId).emit("updated-message", updateMessage);

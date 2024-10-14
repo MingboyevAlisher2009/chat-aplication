@@ -5,17 +5,10 @@ import apiClient from "@/lib/api.client";
 import { CONTACTS_DM_ROUTE, GET_USER_CHANNEL_ROUTE } from "@/utils/constants";
 import { useAppStore } from "@/store";
 import ContactList from "@/components/contact-list";
-import CreateChannel from "./components/create-channel";
 
 const ContactsContainer = () => {
-  const {
-    setDirectMessages,
-    directMessages,
-    channels,
-    setChannels,
-    setNotification,
-    selectedChatMessages,
-  } = useAppStore();
+  const { setDirectMessages, directMessages, setChannels, notification } =
+    useAppStore();
 
   useEffect(() => {
     const getContacts = async () => {
@@ -24,19 +17,8 @@ const ContactsContainer = () => {
       if (data.contacts) setDirectMessages(data.contacts);
     };
 
-    const getChannels = async () => {
-      try {
-        const { data } = await apiClient.get(GET_USER_CHANNEL_ROUTE);
-
-        if (data.channels) setChannels(data.channels);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
     getContacts();
-    getChannels();
-  }, [setChannels, setDirectMessages, setNotification, selectedChatMessages]);
+  }, [notification]);
 
   return (
     <div className="relative  md:w-[35vw] lg:w-[30vw] xl:w-[20vw] bg-[#1b1c24] border-r-2 border-[#2f303b] w-full">

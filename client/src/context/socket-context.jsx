@@ -14,9 +14,7 @@ export const SocketProvider = ({ children }) => {
   const {
     userInfo,
     setOnlineUsers,
-    setNotification,
     setSelectedChatMessages,
-    notification,
   } = useAppStore();
 
   useEffect(() => {
@@ -44,6 +42,7 @@ export const SocketProvider = ({ children }) => {
           selectedChatData._id === message.recipient._id
         ) {
           addMessage(message);
+          console.log(message);
         }
       };
 

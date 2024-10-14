@@ -96,10 +96,14 @@ const MessageBar = () => {
 
       setIsUploading(true);
 
-      const { data, status } = await apiClient.post(UPLOAD_FILE_ROUTE, formData, {
-        onUploadProgress: (data) =>
-          setFileUploadProgress(Math.round((100 * data.loaded) / data.total)),
-      });
+      const { data, status } = await apiClient.post(
+        UPLOAD_FILE_ROUTE,
+        formData,
+        {
+          onUploadProgress: (data) =>
+            setFileUploadProgress(Math.round((100 * data.loaded) / data.total)),
+        }
+      );
 
       if (status === 200) {
         setIsUploading(false);
@@ -143,16 +147,14 @@ const MessageBar = () => {
                   alt="Attachment"
                 />
               )
+            ) : editMessage.messageType === "text" ? (
+              <h2>{editMessage.content}</h2>
             ) : (
-              editMessage.messageType === "text" ? (
-                <h2>{editMessage.content}</h2>
-              ) : (
-                <img
-                  className="w-10 h-10 bg-center bg-cover"
-                  src={`${HOST}/${editMessage.fileUrl}`}
-                  alt="Attachment"
-                />
-              )
+              <img
+                className="w-10 h-10 bg-center bg-cover"
+                src={`${HOST}/${editMessage.fileUrl}`}
+                alt="Attachment"
+              />
             )}
           </div>
           <button
@@ -166,7 +168,7 @@ const MessageBar = () => {
         <div className="flex-1 flex rounded-md items-center gap-5 bg-[#2a2b33] pr-5">
           <input
             type="text"
-            className="flex-1 p-5 bg-transparent rounded-md focus:border-none focus:outline-none"
+            className="w-full p-5 bg-transparent rounded-md focus:border-none focus:outline-none"
             placeholder="Enter Message"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
@@ -191,7 +193,10 @@ const MessageBar = () => {
               <RiEmojiStickerLine className="text-2xl" />
             </button>
             {emojiPickerOpen && (
-              <div className="absolute bottom-16 right-0" ref={emojiRef}>
+              <div
+                className="absolute bottom-16 sm:right-0 -right-28"
+                ref={emojiRef}
+              >
                 <EmojiPicker
                   theme="dark"
                   onEmojiClick={handleAddEmoji}

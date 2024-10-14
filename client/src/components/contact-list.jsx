@@ -23,6 +23,7 @@ const ContactList = ({ contacts, isChannel = false }) => {
       setSelectedChatMessages([]);
     }
   };
+
   useEffect(() => {
     if (contacts.length > 0) {
       const notifications = contacts.flatMap((contact) => {
@@ -41,35 +42,26 @@ const ContactList = ({ contacts, isChannel = false }) => {
 
       setNotification(sortedNotifications);
     }
-  }, [contacts, setNotification, selectedChatMessages]);
+  }, [
+    selectedChatMessages,
+    setSelectedChatMessages,
+    selectedChatData,
+    setNotification,
+  ]);
 
   const renderLastMessage = (contact) => {
-    const notifications = notification.filter(
-      (notif) => notif.sender === contact._id
-    );
-
-    if (contact.lastMessageContent) {
-      const lastNotification = notifications[notifications.length - 1];
-
-      if (lastNotification) {
-        if (lastNotification.type === "text") {
-          return lastNotification.content;
-        }
-      }
-
-      if (contact.lastMessageType === "text") {
-        return contact.lastMessageContent;
-      }
-
-      return <span>Send photo</span>;
-    } else {
-      return "";
+    if (contact.lastMessageType === "text") {
+      return contact.lastMessageContent;
     }
+
+    return <span>Send file</span>;
   };
 
   const getNotificationCount = (contact) => {
     return notification.filter((notif) => notif.sender === contact._id).length;
   };
+
+  console.log(notification);
 
   return (
     <div className="mt-5">
@@ -96,9 +88,7 @@ const ContactList = ({ contacts, isChannel = false }) => {
                   selectedChatData && "hidden md:block"
                 } w-5 h-5 rounded-full z-50 right-3 top-6 bg-blue-500 transition-all flex items-center justify-center`}
               >
-                <span className="text-xs block text-white text-center">
-                  {getNotificationCount(contact)}
-                </span>
+                <span className="text-xs block text-white text-center"></span>
               </div>
             )}
             <div className="flex gap-5 items-center relative justify-start text-neutral-500">
@@ -107,7 +97,7 @@ const ContactList = ({ contacts, isChannel = false }) => {
                   {isOnline && (
                     <div
                       className={`absolute ${
-                        selectedChatData
+                        selectedChatData && selectedChatData._id === contact._id
                           ? "hidden md:block border-[#8417ff]"
                           : "border-[#1b1c24]"
                       } w-3 h-3 rounded-full z-10 -bottom-0 -right-0 border-2 bg-[#06d6ae] transition-all`}
