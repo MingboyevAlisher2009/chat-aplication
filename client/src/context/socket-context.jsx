@@ -86,6 +86,22 @@ export const SocketProvider = ({ children }) => {
         }
       };
 
+      const handleUpdateMessage = (message) => {
+        const { selectedChatMessages, setSelectedChatMessages } =
+          useAppStore.getState();
+
+        const index = selectedChatMessages.findIndex(
+          (m) => m._id === message._id
+        );
+
+        if (index > -1) {
+          const updatedMessages = [...selectedChatMessages];
+          updatedMessages[index] = message;
+
+          setSelectedChatMessages(updatedMessages);
+        }
+      };
+
       socket.current.on("getOnlineUsers", (users) => setOnlineUsers(users));
       socket.current.on("newNotification", handleNotification);
       socket.current.on("reciveMessage", handleReciveMessage);
@@ -93,8 +109,8 @@ export const SocketProvider = ({ children }) => {
       socket.current.on("deleted-message", (message) => {
         setSelectedChatMessages(message);
       });
-      socket.current.on("updated-message", (messages) =>
-        setSelectedChatMessages(messages)
+      socket.current.on("updated-message", (message) =>
+        handleUpdateMessage(message)
       );
 
       return () => {

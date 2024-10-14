@@ -11,31 +11,27 @@ console.log(__dirname);
 
 const deleteFileAndEmptyFolder = (filePath) => {
   try {
-    // Delete the file
     unlinkSync(filePath);
 
-    // Get the folder path
     const folderPath = path.dirname(filePath);
 
-    // Function to delete a directory recursively
     const deleteDirectoryRecursively = (dirPath) => {
       try {
         const files = readdirSync(dirPath);
         files.forEach((file) => {
           const filePath = path.join(dirPath, file);
           if (statSync(filePath).isDirectory()) {
-            deleteDirectoryRecursively(filePath); // Recursively delete subdirectories
+            deleteDirectoryRecursively(filePath); 
           } else {
-            unlinkSync(filePath); // Delete file
+            unlinkSync(filePath); 
           }
         });
-        rmdirSync(dirPath); // Remove the empty directory
+        rmdirSync(dirPath); 
       } catch (err) {
         console.error("Error deleting directory:", err);
       }
     };
 
-    // Check if the folder is empty and delete it
     const files = readdirSync(folderPath);
     if (files.length === 0) {
       deleteDirectoryRecursively(folderPath);

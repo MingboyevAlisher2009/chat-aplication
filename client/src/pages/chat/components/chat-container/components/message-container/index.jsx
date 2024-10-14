@@ -56,6 +56,7 @@ const MessageContainer = () => {
   const [messageId, setMessageId] = useState(null);
 
   const toggleDeleteModal = () => setdeleteModal(!deleteModal);
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -94,14 +95,7 @@ const MessageContainer = () => {
         observer.unobserve(element);
       });
     };
-  }, [
-    selectedChatMessages,
-    selectedChatData,
-    notification,
-    userInfo,
-    socket,
-    setNotification,
-  ]);
+  }, [selectedChatMessages]);
 
   useEffect(() => {
     const getMessages = async () => {
@@ -311,7 +305,6 @@ const MessageContainer = () => {
                     src={`${HOST}/${message.fileUrl}`}
                     alt={message.sender}
                   />
-                 
                 </div>
               ) : message.fileUrl.toLowerCase().endsWith(".mp3") ||
                 message.fileUrl.toLowerCase().endsWith(".m4a") ? (
